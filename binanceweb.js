@@ -106,8 +106,8 @@ let server = app.listen(8080, function () {
 
 let mailer = require('./mailer');
 
-let APIKEY = 'zSehYr8Dg1RrDGfE95MbKpIZ3jDZDCkKHsRKevpH8IAqNHWDmszCgTA7x5MsW6kj';
-let APISECRET = 'WG1OjqRhlHGTlP6nliWKti52bvNXFeJGOIZgQueskYZKwyn9fJwHfLV7G1jLKdfq';
+let APIKEY = 'a';
+let APISECRET = 'b';
 
 const binance = require('./node-binance-api')().options({
     APIKEY: APIKEY,
