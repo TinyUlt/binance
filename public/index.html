@@ -98,9 +98,9 @@
         document.getElementById('create').onclick = function () {
             pricelist.push(parseFloat(document.getElementById('input').value) );
             pushPriceList();
-            getPrice();
-        };
 
+        };
+        getPrice();
        getPriceList();
         self.setInterval("clock()",5000);
 
