@@ -140,16 +140,19 @@ function check(){
 }
 function clock() {
     console.log('clock');
-    binance.prices('ETHUSDT', (error, ticker) => {
-        if (ticker === undefined){
-            console.log('ticker undefined');
-        } else {
-            console.log('Price of ETHUSDT: ', ticker.ETHUSDT);
-            nowPrice.ETHUSDT = ticker.ETHUSDT;
-            check();
-        }
-
-        //mailer.sendEMail(['597833968@qq.com'],'price ',ticker.ETHUSDT);
+    // binance.prices('ETHUSDT', (error, ticker) => {
+    //     if (ticker === undefined){
+    //         console.log('ticker undefined');
+    //     } else {
+    //         console.log('Price of ETHUSDT: ', ticker.ETHUSDT);
+    //         nowPrice.ETHUSDT = ticker.ETHUSDT;
+    //         check();
+    //     }
+    //
+    //     //mailer.sendEMail(['597833968@qq.com'],'price ',ticker.ETHUSDT);
+    // });
+    binance.prices('BNBBTC', (error, ticker) => {
+        console.log("Price of BNB: ", ticker.BNBBTC);
     });
 
 }
