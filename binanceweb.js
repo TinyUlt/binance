@@ -119,6 +119,10 @@ function check(){
     //let priceData = JSON.parse(fs.readFileSync('./public/price.json'));
     let has = false;
     for (let i=0;i<priceData.ETHUSDT.length;i++){
+
+
+        console.log('-----------------------');
+
         console.log('lastPrice'+lastPrice.ETHUSDT);
         console.log('priceData'+priceData.ETHUSDT[i]);
         console.log('nowPrice'+nowPrice.ETHUSDT);
