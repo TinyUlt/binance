@@ -119,6 +119,23 @@ function check(){
     //let priceData = JSON.parse(fs.readFileSync('./public/price.json'));
     let has = false;
     for (let i=0;i<priceData.ETHUSDT.length;i++){
+        console.log('lastPrice'+lastPrice.ETHUSDT);
+        console.log('priceData'+priceData.ETHUSDT[i]);
+        console.log('nowPrice'+nowPrice.ETHUSDT);
+
+        if (nowPrice.ETHUSDT <= priceData.ETHUSDT[i]){
+            console.log('nowPrice.ETHUSDT <= priceData.ETHUSDT');
+        }
+        if (priceData.ETHUSDT[i]<=lastPrice.ETHUSDT){
+            console.log('priceData.ETHUSDT[i]<=lastPrice.ETHUSDT)');
+        }
+        if (lastPrice.ETHUSDT <= priceData.ETHUSDT[i]){
+            console.log('lastPrice.ETHUSDT <= priceData.ETHUSDT[i]');
+        }
+        if (priceData.ETHUSDT[i]<=nowPrice.ETHUSDT){
+            console.log('priceData.ETHUSDT[i]<=nowPrice.ETHUSDT');
+        }
+        console.log('============================');
         if ((nowPrice.ETHUSDT <= priceData.ETHUSDT[i] && priceData.ETHUSDT[i]<=lastPrice.ETHUSDT)||
             (lastPrice.ETHUSDT <= priceData.ETHUSDT[i] && priceData.ETHUSDT[i]<=nowPrice.ETHUSDT)){
             mailer.sendEMail(['597833968@qq.com'],priceData.ETHUSDT[i],'now price' + nowPrice.ETHUSDT);
