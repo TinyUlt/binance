@@ -138,6 +138,9 @@ function check(){
     //fs.writeFileSync('./public/price.json',JSON.stringify(priceData));
     console.log(priceData);
 }
+binance.prices('BNBBTC', (error, ticker) => {
+    console.log("Price of BNB: ", ticker.BNBBTC);
+});
 function clock() {
     console.log('clock');
     // binance.prices('ETHUSDT', (error, ticker) => {
@@ -156,4 +159,4 @@ function clock() {
     });
 
 }
-setInterval(clock,5000);
+// setInterval(clock,5000);
