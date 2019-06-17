@@ -156,6 +156,8 @@ function check(){
     }
     if (!has){
         lastPrice.ETHUSDT = nowPrice.ETHUSDT;
+    } else {
+        check();
     }
     //fs.writeFileSync('./public/price.json',JSON.stringify(priceData));
     console.log(priceData);
