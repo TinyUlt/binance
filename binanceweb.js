@@ -145,7 +145,7 @@ function clock() {
             console.log('ticker undefined');
         } else {
             console.log('Price of ETHUSDT: ', ticker.ETHUSDT);
-            nowPrice.ETHUSDT = ticker.ETHUSDT;
+            nowPrice.ETHUSDT = parseFloat(ticker.ETHUSDT);
             check();
         }
 
