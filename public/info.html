@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script type="text/javascript" src="js/loader.js"></script>
+<script  type="text/javascript" src="js/jquery.min.js"></script>
+
+<!--<form action="http://127.0.0.1:8081/process_get" method="GET">-->
+    <!--First Name: <input type="text" name="first_name">  <br>-->
+
+    <!--Last Name: <input type="text" name="last_name">-->
+    <!--<input type="submit" value="Submit">-->
+<!--</form>-->
+<!--<form action="http://127.0.0.1:8081/process_post" method="POST">-->
+    <!--First Name: <input type="text" name="first_name">  <br>-->
+
+    <!--Last Name: <input type="text" name="last_name">-->
+    <!--<input type="submit" value="Submit">-->
+
+<script type="text/javascript">
+
+
+
+
+
+    let serverId = null;
+    function checkResponse(cd){
+        if(cd === "-1"){
+            alert("password error");
+        }else if(cd === "-2"){
+            alert("can not find");
+        }else if(cd === "-3"){
+            alert("input error");
+        }else{
+            return true;
+        }
+        return false;
+
+    }
+    function update(event){
+        let password = document.getElementById("password_input").value;
+
+        if(event !==undefined){
+            let e = event ? event : window.event;
+            let target = e.target;
+            let index = target.selectedIndex;
+            console.log("选中的选项="+target[index].getAttribute('dataid'));
+            // let password = document.getElementById("password_input").value;
+            serverId = target[index].getAttribute('dataid');
+        }
+        let symbol = serverId.split('_')[0];
+
+
+        let _get = `/d_c?password=${password}&serverId=${serverId}`;
+        console.log(_get);
+        $.post(_get,function(cd,status){
+
+            if(checkResponse(cd)) {
+                let robotInfo = JSON.parse(cd);
+
+
+                //document.getElementById("strtTime").innerHTML = `开始时间:${robotInfo.startTime}`;
+                document.getElementById("endTime").innerHTML = `更新时间:${robotInfo.updateTime}`;
+
+
+                document.getElementById("OrgGoodsQty").innerHTML = `原始货物:${robotInfo.OrgGoodsQty}`;
+                document.getElementById("OrgCurrencyQty").innerHTML = `原始资金:${robotInfo.OrgCurrencyQty}`;
+                document.getElementById("OrgCommissionQty").innerHTML = `原始手续费:${robotInfo.OrgCommissionQty}`;
+
+                document.getElementById("NowGoodsQty").innerHTML = `当前货物:${robotInfo.NowGoodsQty}`;
+                document.getElementById("NowCurrencyQty").innerHTML = `当前资金:${robotInfo.NowCurrencyQty}`;
+                document.getElementById("NowCommissionQty").innerHTML = `当前手续费:${robotInfo.NowCommissionQty}`;
+
+
+                document.getElementById("p6").innerHTML = `净赚资金:${robotInfo.earnSum}`;
+                document.getElementById("commisionDf").innerHTML = `共支出手续费:${robotInfo.commissionFees}`;
+
+
+                //document.getElementById("p1").innerHTML = `最大消耗:${robotInfo.useCurrencyHighst}`;
+                document.getElementById("BTCUSDT").innerHTML = `当前价格:${robotInfo[symbol]}`;
+                document.getElementById("TradingCount").innerHTML = `进行中的交易数(被套):${robotInfo.TradingCount}`;
+                document.getElementById("useMultiple").innerHTML = `消耗速度:${robotInfo.useMultiple}`;
+                //document.getElementById("getDataWay").innerHTML = `状态:${robotInfo.getDataWay}`;
+                document.getElementById("highst").innerHTML = `最高买入:${robotInfo.hightstNodePrice}`;
+                document.getElementById("lowst").innerHTML = `最低买入:${robotInfo.lowstNodePrice}`;
+            }
+        });
+
+        let now = (new Date()).valueOf();
+        _get = `/d_getEarn?password=${password}&serverId=${serverId}&startTime=${now-1000*60*60}&endTime=${now}`;
+        console.log(_get);
+        $.post(_get,function(cd,status){
+            if(checkResponse(cd)) {
+                document.getElementById("earn1h").innerHTML = `近1小时赚取:${cd}`;
+            }
+        });
+        _get = `/d_getCost?password=${password}&serverId=${serverId}&startTime=${now-1000*60*60}&endTime=${now}`;
+        console.log(_get);
+        $.post(_get,function(cd,status){
+            if(checkResponse(cd)) {
+                document.getElementById("cost1h").innerHTML = `近1小时投入(USDT):${cd}`;
+            }
+        });
+        _get = `/d_getEarn?password=${password}&serverId=${serverId}&startTime=${now-1000*60*60*24}&endTime=${now}`;
+        console.log(_get);
+        $.post(_get,function(cd,status){
+            if(checkResponse(cd)) {
+                document.getElementById("earn1d").innerHTML = `近24小时赚取(USDT):${cd}`;
+            }
+        });
+
+        _get = `/d_getCost?password=${password}&serverId=${serverId}&startTime=${now-1000*60*60*24}&endTime=${now}`;
+        console.log(_get);
+        $.post(_get,function(cd,status){
+            if(checkResponse(cd))  {
+                document.getElementById("cost1d").innerHTML = `近24小时投入(USDT):${cd}`;
+            }
+        });
+
+
+//        _get = `/d_getUsed?password=${password}&serverId=${serverId}`;
+//        console.log(_get);
+//        $.post(_get,function(cd,status){
+//            if(checkResponse(cd))  {
+//                document.getElementById("currencyDf").innerHTML = `当前支出(USDT):${cd}`;
+//            }
+//        });
+
+        _get = `/d_getConfig?password=${password}&serverId=${serverId}`;
+        console.log(_get);
+        $.post(_get,function(cd,status){
+            if(checkResponse(cd))  {
+                let config = JSON.parse(cd);
+                document.getElementById("enableBuy").checked = config.enableBuy;
+                document.getElementById("enableSell").checked = config.enableSell;
+                document.getElementById("sellAll").checked = config.sellAll;
+                document.getElementById("Multiple").value = config.Multiple;
+                document.getElementById("topBuyPrice").value = config.topBuyPrice;
+                document.getElementById("buyFallingOfFees").value = config.buyFallingOfFees;
+
+                document.getElementById("qty").value = config.qty;
+            }
+        });
+    }
+    
+    function getList() {
+        //let password = document.getElementById("password_input").value;
+        let _get = `/d_getList`;
+        console.log(_get);
+        $.post(_get,function(cd,status){
+            if(checkResponse(cd)) {
+                dblist = JSON.parse(cd);
+                serverId = dblist[0];
+                createOption('sel',dblist);
+                //update();
+            }
+        });
+
+    }
+    function setConfig(){
+        let password = document.getElementById("password_input").value;
+        let enableBuy = document.getElementById("enableBuy").checked?1:0;
+        let enableSell = document.getElementById("enableSell").checked?1:0;
+        let sellAll = document.getElementById("sellAll").checked?1:0;
+        let Multiple = document.getElementById("Multiple").value;
+        let topBuyPrice = document.getElementById("topBuyPrice").value;
+        let buyFallingOfFees   = document.getElementById("buyFallingOfFees").value;
+        let qty = document.getElementById("qty").value;
+        let _get = `/d_setConfig?password=${password}&serverId=${serverId}&enableBuy=${enableBuy}&enableSell=${enableSell}&sellAll=${sellAll}&Multiple=${Multiple}&buyFallingOfFees=${buyFallingOfFees}&topBuyPrice=${topBuyPrice}&qty=${qty}`;
+
+        $.post(_get,function(cd,status){
+            if(checkResponse(cd)) {
+                let config = JSON.parse(cd);
+                document.getElementById("enableBuy").checked = config.enableBuy;
+                document.getElementById("enableSell").checked = config.enableSell;
+                document.getElementById("sellAll").checked = config.sellAll;
+                document.getElementById("topBuyPrice").value = config.topBuyPrice;
+                document.getElementById("buyFallingOfFees").value = config.buyFallingOfFees;
+                document.getElementById("Multiple").value = config.Multiple;
+
+                document.getElementById("qty").value = config.qty;
+                alert("成功");
+            }
+        });
+    }
+    function createOption(parentId, data){
+        let parent = document.getElementById(parentId);
+        for(let i=0; i<data.length; i++){
+            let opt = document.createElement('option');
+            //设置option的值
+            opt.innerHTML = data[i];
+            //定义option的自定义值
+            opt.setAttribute('dataid', data[i]);
+            parent.appendChild(opt);
+        }
+    }
+
+    $(document).ready(function(){
+        document.getElementById('reflash').onclick = function () {update();};
+        document.getElementById('submit').onclick = function () {setConfig();};
+        getList();
+
+    });
+
+</script>
+
+<p> password <input type="input" id="password_input"  ></p>
+<select onchange="update(event)" id="sel"></select>
+<button id="reflash">刷新</button>
+
+
+<p id="endTime"></p>
+<p id="OrgGoodsQty"></p>
+<p id="OrgCurrencyQty"></p>
+<p id="OrgCommissionQty"></p>
+<p>----------------------------</p>
+<p id="NowGoodsQty"></p>
+<p id="NowCurrencyQty"></p>
+<p id="NowCommissionQty"></p>
+
+<p>----------------------------</p>
+<p id="p6"></p>
+<p id="commisionDf"></p>
+
+<p>----------------------------</p>
+<p id="p2"></p>
+<p id="p3"></p>
+<p id="p1"></p>
+<p id="cost1h"></p>
+<p id="earn1h"></p>
+<p id="cost1d"></p>
+<p id="earn1d"></p>
+<p id="BTCUSDT"></p>
+<p id="TradingCount"></p>
+<p id="useMultiple"></p>
+<p id="highst"></p>
+<p id="lowst"></p>
+<p>----------------------------</p>
+<p> enableBuy:<input type="checkbox" id="enableBuy"  >  enableSell:<input type="checkbox" id="enableSell"  >  sellAll:<input type="checkbox" id="sellAll"  ></p>
+
+<p> </p>
+<p> Multiple:<input type="input" id="Multiple"  ></p>
+<p> buyFallingOfFees:<input type="input" id="buyFallingOfFees"  ></p>
+<p> topBuyPrice:<input type="input" id="topBuyPrice"  > </p>
+<p> qty:<input type="input" id="qty"  ></p>
+
+<button id="submit">提交</button>
+</body>
+</html>

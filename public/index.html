@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script type="text/javascript" src="js/loader.js"></script>
+<script  type="text/javascript" src="js/jquery.min.js"></script>
+
+
+<script type="text/javascript">
+
+    let pricelist = null;
+    function printPriceList() {
+
+        let priceTable = document.getElementById('priceTable');
+        while(priceTable.hasChildNodes()){
+            priceTable.removeChild(priceTable.lastChild)
+        }
+
+        for(let i = 0; i < pricelist.length; i++){
+            let tr = document.createElement("tr");
+            priceTable.appendChild(tr);
+            let tdPrice = document.createElement("td");
+            let tdDelete = document.createElement("td");
+            priceTable.appendChild(tdPrice);
+            priceTable.appendChild(tdDelete);
+
+
+            let label=document.createElement("label");
+            label.textContent = pricelist[i];
+
+            let button=document.createElement("button");
+            button.textContent='delete';
+            button.onclick = function () {
+                let price = pricelist[i];
+
+                var tina = pricelist.filter((p) => {
+                    return p == price;
+                });
+                var index = pricelist.indexOf(tina[0]);
+                index > -1 && pricelist.splice(index, 1);
+
+                console.log(pricelist);
+                pushPriceList();
+            };
+
+            tdPrice.appendChild(label);
+            tdDelete.appendChild(button);
+            document.body.appendChild(priceTable);
+        }
+    }
+    function getPriceList() {
+        _get = `/d_getPriceList`;
+        console.log(_get);
+        $.post(_get,function(cd,status){
+
+                pricelist = JSON.parse(cd);
+
+            console.log(pricelist);
+
+            printPriceList();
+
+        });
+
+    }
+    function pushPriceList() {
+        _get = `/d_pushPriceList?priceList=${JSON.stringify(pricelist)}`;
+        console.log(_get);
+        $.post(_get,function(cd,status){
+
+            pricelist = JSON.parse(cd);
+
+            console.log(pricelist);
+
+            printPriceList();
+
+        });
+
+    }
+    function getPrice(){
+        _get = `/d_getPrice`;
+
+        $.post(_get,function(cd,status){
+
+            console.log(cd);
+            let nowPrice = JSON.parse(cd);
+            document.getElementById('nowPrice').textContent=`Now Price:${nowPrice.ETHUSDT}`;
+
+        });
+    }
+
+    function clock()
+    {
+        getPrice();
+    }
+
+
+    $(document).ready(function(){
+
+        document.getElementById('create').onclick = function () {
+            pricelist.push(parseFloat(document.getElementById('input').value) );
+            pushPriceList();
+        };
+
+       getPriceList();
+        self.setInterval("clock()",1000);
+
+    });
+
+</script>
+
+<div>
+    <label id="nowPrice">Now Price:</label>
+</div>
+
+
+<label >price:</label>
+<input type="input" id="input"/>
+<button id="create">Create</button>
+
+<table id="priceTable" border="0">
+
+</table>
+
+</body>
+</html>
