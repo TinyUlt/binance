@@ -8,6 +8,7 @@
 <script type="text/javascript">
 
     let pricelist = null;
+    let symbol = null;
     function printPriceList() {
 
         let priceTable = document.getElementById('priceTable');
@@ -48,7 +49,7 @@
         }
     }
     function getPriceList() {
-        _get = `/d_getPriceList`;
+        _get = `/d_getPriceList?symbol=${symbol}`;
         console.log(_get);
         $.post(_get,function(cd,status){
 
@@ -62,7 +63,7 @@
 
     }
     function pushPriceList() {
-        _get = `/d_pushPriceList?priceList=${JSON.stringify(pricelist)}`;
+        _get = `/d_pushPriceList?symbol=${symbol}&priceList=${JSON.stringify(pricelist)}`;
         console.log(_get);
         $.post(_get,function(cd,status){
 
@@ -76,23 +77,45 @@
 
     }
     function getPrice(){
-        _get = `/d_getPrice`;
+        _get = `/d_getPrice?symbol=${symbol}`;
 
         $.post(_get,function(cd,status){
 
             console.log(cd);
             let nowPrice = JSON.parse(cd);
-            document.getElementById('nowPrice').textContent=`Now Price:${nowPrice.ETHUSDT}`;
+            document.getElementById('nowPrice').textContent=`Now Price:${nowPrice[symbol]}`;
 
         });
     }
 
+    function getEnableSymbols(){
+        _get = `/d_getEnableSymbols`;
+
+        $.post(_get,function(cd,status){
+
+            console.log(cd);
+            let symbols = JSON.parse(cd);
+           for(let i=0;i<symbols.length;i++){
+               let option = document.createElement("option");
+               option.value = symbols[i];
+               option.textContent = symbols[i];
+               document.getElementById('symbol').appendChild(option);
+           }
+            changeSymbol();
+        });
+    }
     function clock()
     {
+
         getPrice();
         getPriceList();
     }
-
+    function changeSymbol(){
+        symbol = document.getElementById("symbol").value;
+        console.log(symbol);
+        getPrice();
+        getPriceList();
+    }
 
     $(document).ready(function(){
 
@@ -101,13 +124,19 @@
             pushPriceList();
 
         };
-        getPrice();
-       getPriceList();
+
+        getEnableSymbols();
+
         self.setInterval("clock()",5000);
 
     });
 
 </script>
+
+<select id="symbol" onchange="changeSymbol()">
+    <!--<option value="ETHUSDT">ETHUSDT</option>-->
+    <!--<option value="ZRXUSDT">ZRXUSDT</option>-->
+</select>
 
 <div>
     <label id="nowPrice">Now Price:</label>

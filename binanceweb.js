@@ -10,14 +10,22 @@ let priceData = JSON.parse(fs.readFileSync('./public/price.json'));
 
 let nowPrice={};
 let lastPrice={};
-nowPrice.ETHUSDT=0;
-lastPrice.ETHUSDT=0;
+
+let enableSymbles=['ETHUSDT','ZRXUSDT'];
+for (let i=0;i<enableSymbles.length;i++){
+    nowPrice[enableSymbles[i]]=0;
+    lastPrice[enableSymbles[i]]=0;
+
+    if (priceData[enableSymbles[i]]===undefined){
+        priceData[enableSymbles[i]]=[];
+    }
+}
 
 app.use(express.static('public'));
 
 app.get('/index.htm', function (req, res) {
     res.sendFile( __dirname + "/" + "index.htm" );
-})
+});
 
 app.get('/process_get', function (req, res) {
 
@@ -28,12 +36,12 @@ app.get('/process_get', function (req, res) {
     };
     console.log(response);
     res.end(JSON.stringify(response));
-})
+});
 
 app.get('/d_*', function (req, res) {
 
     handle(req.params['0'], req, res );
-})
+});
 app.post('/process_post', urlencodedParser, function (req, res) {
 
     // 输出 JSON 格式
@@ -43,11 +51,11 @@ app.post('/process_post', urlencodedParser, function (req, res) {
     };
     console.log(response);
     res.end(JSON.stringify(response));
-})
+});
 app.post('/d_*', urlencodedParser, function (req, res) {
 
     handle(req.params['0'], req, res );
-})
+});
 
 function compare() {
     return function(object1, object2) {
@@ -57,9 +65,8 @@ function compare() {
             return -1;
         } else if (value2 > value1) {
             return 1;
-        } else {
-            return 0;
         }
+        return 0;
     }
 }
 function handle(pathName, req, response) {
@@ -67,11 +74,10 @@ function handle(pathName, req, response) {
     console.log(pathName);
 
     if (pathName === 'getPriceList'){
-        response.end(JSON.stringify(priceData.ETHUSDT.sort(compare())));
-        return;
-    }
-    if (pathName === 'pushPriceList'){
-
+        let symbol = req.query.symbol;
+        response.end(JSON.stringify(priceData[symbol].sort(compare())));
+    } else if (pathName === 'pushPriceList'){
+        let symbol = req.query.symbol;
         let pricelist = JSON.parse(req.query.priceList);
         let isValiable=true;
         for (let i=0;i < pricelist.length;i++){
@@ -81,26 +87,25 @@ function handle(pathName, req, response) {
             }
         }
         if (isValiable){
-            priceData.ETHUSDT = pricelist.sort(compare());
+            priceData[symbol] = pricelist.sort(compare());
         }
 
         fs.writeFileSync('./public/price.json',JSON.stringify(priceData));
-        response.end(JSON.stringify(priceData.ETHUSDT.sort(compare())));
-        return;
-    }
-    if (pathName === 'getPrice'){
+        response.end(JSON.stringify(priceData[symbol].sort(compare())));
+    } else if (pathName === 'getPrice'){
 
         response.end(JSON.stringify(nowPrice));
-        return;
+    } else if (pathName === 'getEnableSymbols'){
+        response.end(JSON.stringify(enableSymbles));
     }
 
 }
-let server = app.listen(8080, function () {
+let server = app.listen(8081, function () {
 
     let host = server.address().address;
     let port = server.address().port;
 
-    console.log("应用实例，访问地址为 http://%s:%s", host, port)
+    console.log('应用实例，访问地址为 http://%s:%s', host, port)
 });
 
 
@@ -115,47 +120,27 @@ const binance = require('./node-binance-api')().options({
     useServerTime: true, // If you get timestamp errors, synchronize to server time at startup
     test: true // If you want to use sandbox mode where orders are simulated
 });
-function check(){
+function check(symbol){
     //let priceData = JSON.parse(fs.readFileSync('./public/price.json'));
     let has = false;
-    for (let i=0;i<priceData.ETHUSDT.length;i++){
+    for (let i=0;i<priceData[symbol].length;i++){
 
-
-        // console.log('-----------------------');
-        //
-        // console.log('lastPrice'+lastPrice.ETHUSDT);
-        // console.log('priceData'+priceData.ETHUSDT[i]);
-        // console.log('nowPrice'+nowPrice.ETHUSDT);
-        //
-        // if (nowPrice.ETHUSDT <= priceData.ETHUSDT[i]){
-        //     console.log('1 nowPrice.ETHUSDT <= priceData.ETHUSDT');
-        // }
-        // if (priceData.ETHUSDT[i]<=lastPrice.ETHUSDT){
-        //     console.log('2 priceData.ETHUSDT[i]<=lastPrice.ETHUSDT)');
-        // }
-        // if (lastPrice.ETHUSDT <= priceData.ETHUSDT[i]){
-        //     console.log('3 lastPrice.ETHUSDT <= priceData.ETHUSDT[i]');
-        // }
-        // if (priceData.ETHUSDT[i]<=nowPrice.ETHUSDT){
-        //     console.log('4 priceData.ETHUSDT[i]<=nowPrice.ETHUSDT');
-        // }
-        // console.log('============================');
-        if ((nowPrice.ETHUSDT <= priceData.ETHUSDT[i] && priceData.ETHUSDT[i]<=lastPrice.ETHUSDT)||
-            (lastPrice.ETHUSDT <= priceData.ETHUSDT[i] && priceData.ETHUSDT[i]<=nowPrice.ETHUSDT)){
+        if ((nowPrice[symbol] <= priceData[symbol][i] && priceData[symbol][i]<=lastPrice[symbol])||
+            (lastPrice[symbol] <= priceData[symbol][i] && priceData[symbol][i]<=nowPrice[symbol])){
             // console.log('iiiiiiiii');
-            mailer.sendEMail(['597833968@qq.com'],priceData.ETHUSDT[i],'now price' + nowPrice.ETHUSDT);
+            mailer.sendEMail(['597833968@qq.com'],priceData[symbol][i],'now price' + nowPrice[symbol]);
 
-            let tina = priceData.ETHUSDT.filter(p => {return p === priceData.ETHUSDT[i];});
-            let index = priceData.ETHUSDT.indexOf(tina[0]);
+            let tina = priceData[symbol].filter(p => {let aa = p === priceData[symbol][i];return aa;});
+            let index = priceData[symbol].indexOf(tina[0]);
             if (index > -1){
-                priceData.ETHUSDT.splice(index, 1);
+                priceData[symbol].splice(index, 1);
             }
             has = true;
             break;
         }
     }
     if (!has){
-        lastPrice.ETHUSDT = nowPrice.ETHUSDT;
+        lastPrice[symbol] = nowPrice[symbol];
     } else {
         check();
     }
@@ -164,17 +149,19 @@ function check(){
 }
 function clock() {
     console.log('clock');
-    binance.prices('ETHUSDT', (error, ticker) => {
-        if (ticker === undefined){
-            console.log('ticker undefined');
-        } else {
-            console.log('Price of ETHUSDT: ', ticker.ETHUSDT);
-            nowPrice.ETHUSDT = parseFloat(ticker.ETHUSDT);
-            check();
-        }
+    for (let i=0;i<enableSymbles.length;i++){
+        let symbol=enableSymbles[i];
+        binance.prices((error, ticker) => {
+            if (ticker === undefined){
+                console.log('ticker undefined');
+            } else {
+                console.log('Price of '+symbol, ticker[symbol]);
+                nowPrice[symbol] = parseFloat(ticker[symbol]);
+                check(symbol);
+            }
+        });
+    }
 
-        //mailer.sendEMail(['597833968@qq.com'],'price ',ticker.ETHUSDT);
-    });
 
 }
 setInterval(clock,5000);
