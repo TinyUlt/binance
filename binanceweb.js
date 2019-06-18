@@ -128,7 +128,7 @@ function check(symbol){
         if ((nowPrice[symbol] <= priceData[symbol][i] && priceData[symbol][i]<=lastPrice[symbol])||
             (lastPrice[symbol] <= priceData[symbol][i] && priceData[symbol][i]<=nowPrice[symbol])){
             // console.log('iiiiiiiii');
-            mailer.sendEMail(['597833968@qq.com'],priceData[symbol][i],'now price' + nowPrice[symbol]);
+            mailer.sendEMail(['597833968@qq.com'],symbol + priceData[symbol][i],'now price' + nowPrice[symbol]);
 
             let tina = priceData[symbol].filter(p => {let aa = p === priceData[symbol][i];return aa;});
             let index = priceData[symbol].indexOf(tina[0]);
