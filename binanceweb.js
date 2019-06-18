@@ -11,15 +11,16 @@ let priceData = JSON.parse(fs.readFileSync('./public/price.json'));
 let nowPrice={};
 let lastPrice={};
 
-let enableSymbles=['ETHUSDT','ZRXUSDT'];
-for (let i=0;i<enableSymbles.length;i++){
-    nowPrice[enableSymbles[i]]=0;
-    lastPrice[enableSymbles[i]]=0;
+let enableSymbles=[];
 
-    if (priceData[enableSymbles[i]]===undefined){
-        priceData[enableSymbles[i]]=[];
-    }
+
+for (let p in priceData){//遍历json对象的每个key/value对,p为key
+
+    nowPrice[p]=0;
+    lastPrice[p]=0;
+    enableSymbles.push(p);
 }
+
 
 app.use(express.static('public'));
 
@@ -72,8 +73,27 @@ function compare() {
 function handle(pathName, req, response) {
 
     console.log(pathName);
-
-    if (pathName === 'getPriceList'){
+    if (pathName==='createSymbol'){
+        let symbol = req.query.symbol;
+        if (priceData[symbol]===undefined){
+            priceData[symbol]=[];
+            enableSymbles.push(symbol);
+            nowPrice[symbol]=0;
+            lastPrice[symbol]=0;
+            fs.writeFileSync('./public/price.json',JSON.stringify(priceData));
+            response.end('');
+        }
+    } else if (pathName === 'deleteSymbol'){
+        let symbol = req.query.symbol;
+        if (priceData[symbol]!==undefined){
+            delete priceData[symbol];
+            removeArray(enableSymbles, symbol);
+            delete nowPrice[symbol];
+            delete lastPrice[symbol];
+            fs.writeFileSync('./public/price.json',JSON.stringify(priceData));
+            response.end('');
+        }
+    } else if (pathName === 'getPriceList'){
         let symbol = req.query.symbol;
         response.end(JSON.stringify(priceData[symbol].sort(compare())));
     } else if (pathName === 'pushPriceList'){
@@ -100,7 +120,7 @@ function handle(pathName, req, response) {
     }
 
 }
-let server = app.listen(8080, function () {
+let server = app.listen(8081, function () {
 
     let host = server.address().address;
     let port = server.address().port;
@@ -120,6 +140,13 @@ const binance = require('./node-binance-api')().options({
     useServerTime: true, // If you get timestamp errors, synchronize to server time at startup
     test: true // If you want to use sandbox mode where orders are simulated
 });
+function removeArray(array, d){
+    let tina = array.filter(p => {let aa = p === d;return aa;});
+    let index = array.indexOf(tina[0]);
+    if (index > -1){
+        array.splice(index, 1);
+    }
+}
 function check(symbol){
     //let priceData = JSON.parse(fs.readFileSync('./public/price.json'));
     let has = false;
@@ -129,12 +156,12 @@ function check(symbol){
             (lastPrice[symbol] <= priceData[symbol][i] && priceData[symbol][i]<=nowPrice[symbol])){
             // console.log('iiiiiiiii');
             mailer.sendEMail(['597833968@qq.com'],symbol + priceData[symbol][i],'now price' + nowPrice[symbol]);
-
-            let tina = priceData[symbol].filter(p => {let aa = p === priceData[symbol][i];return aa;});
-            let index = priceData[symbol].indexOf(tina[0]);
-            if (index > -1){
-                priceData[symbol].splice(index, 1);
-            }
+            removeArray(priceData[symbol], priceData[symbol][i]);
+            // let tina = priceData[symbol].filter(p => {let aa = p === priceData[symbol][i];return aa;});
+            // let index = priceData[symbol].indexOf(tina[0]);
+            // if (index > -1){
+            //     priceData[symbol].splice(index, 1);
+            // }
             has = true;
             break;
         }

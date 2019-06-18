@@ -48,6 +48,24 @@
             document.body.appendChild(priceTable);
         }
     }
+    function createSymbol(s){
+        _get = `/d_createSymbol?symbol=${s}`;
+        console.log(_get);
+        $.post(_get,function(cd,status){
+
+            getEnableSymbols();
+
+        });
+    }
+    function deleteSymbol(s){
+        _get = `/d_deleteSymbol?symbol=${s}`;
+        console.log(_get);
+        $.post(_get,function(cd,status){
+
+            getEnableSymbols();
+
+        });
+    }
     function getPriceList() {
         _get = `/d_getPriceList?symbol=${symbol}`;
         console.log(_get);
@@ -95,11 +113,17 @@
 
             console.log(cd);
             let symbols = JSON.parse(cd);
+
+            let symbolSelect = document.getElementById('symbol');
+            while(symbolSelect.hasChildNodes()){
+                symbolSelect.removeChild(symbolSelect.lastChild)
+            }
+
            for(let i=0;i<symbols.length;i++){
                let option = document.createElement("option");
                option.value = symbols[i];
                option.textContent = symbols[i];
-               document.getElementById('symbol').appendChild(option);
+               symbolSelect.appendChild(option);
            }
             changeSymbol();
         });
@@ -124,19 +148,38 @@
             pushPriceList();
 
         };
+        document.getElementById('createSymbol').onclick = function () {
+
+            createSymbol(document.getElementById("createSymbolInput").value);
+
+        };
+        document.getElementById('deleteSymbol').onclick = function () {
+
+            deleteSymbol(document.getElementById("createSymbolInput").value);
+
+        };
 
         getEnableSymbols();
 
-        self.setInterval("clock()",5000);
+        self.setInterval("clock()",2000);
 
     });
 
 </script>
+<div>
+    <label >create Symbol:</label>
+    <input type="input" id="createSymbolInput"/>
+    <button id="createSymbol">Create</button>
+    <button id="deleteSymbol">Delete</button>
+</div>
 
-<select id="symbol" onchange="changeSymbol()">
-    <!--<option value="ETHUSDT">ETHUSDT</option>-->
-    <!--<option value="ZRXUSDT">ZRXUSDT</option>-->
-</select>
+<div>
+    <select id="symbol" onchange="changeSymbol()">
+        <!--<option value="ETHUSDT">ETHUSDT</option>-->
+        <!--<option value="ZRXUSDT">ZRXUSDT</option>-->
+    </select>
+</div>
+
 
 <div>
     <label id="nowPrice">Now Price:</label>
