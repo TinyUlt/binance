@@ -6,7 +6,8 @@ let bodyParser = require('body-parser');
 
 let urlencodedParser = bodyParser.urlencoded({ extended: false });
 
-let priceData = JSON.parse(fs.readFileSync('./public/price.json'));
+let data = JSON.parse(fs.readFileSync('./public/data.json'));
+let priceData = data.Symbol;
 
 let nowPrice={};
 let lastPrice={};
@@ -70,6 +71,10 @@ function compare() {
         return 0;
     }
 }
+function wirteInfo() {
+    fs.writeFileSync('./public/data.json',JSON.stringify(data));
+}
+
 function handle(pathName, req, response) {
 
     console.log(pathName);
@@ -80,7 +85,7 @@ function handle(pathName, req, response) {
             enableSymbles.push(symbol);
             nowPrice[symbol]=0;
             lastPrice[symbol]=0;
-            fs.writeFileSync('./public/price.json',JSON.stringify(priceData));
+            wirteInfo();
             response.end('');
         }
     } else if (pathName === 'deleteSymbol'){
@@ -90,7 +95,7 @@ function handle(pathName, req, response) {
             removeArray(enableSymbles, symbol);
             delete nowPrice[symbol];
             delete lastPrice[symbol];
-            fs.writeFileSync('./public/price.json',JSON.stringify(priceData));
+            wirteInfo();
             response.end('');
         }
     } else if (pathName === 'getPriceList'){
@@ -110,7 +115,7 @@ function handle(pathName, req, response) {
             priceData[symbol] = pricelist.sort(compare());
         }
 
-        fs.writeFileSync('./public/price.json',JSON.stringify(priceData));
+        wirteInfo();
         response.end(JSON.stringify(priceData[symbol].sort(compare())));
     } else if (pathName === 'getPrice'){
 
@@ -120,7 +125,7 @@ function handle(pathName, req, response) {
     }
 
 }
-let server = app.listen(8080, function () {
+let server = app.listen(8081, function () {
 
     let host = server.address().address;
     let port = server.address().port;
@@ -154,14 +159,8 @@ function check(symbol){
 
         if ((nowPrice[symbol] <= priceData[symbol][i] && priceData[symbol][i]<=lastPrice[symbol])||
             (lastPrice[symbol] <= priceData[symbol][i] && priceData[symbol][i]<=nowPrice[symbol])){
-            // console.log('iiiiiiiii');
-            mailer.sendEMail(['597833968@qq.com'],symbol + priceData[symbol][i],'now price' + nowPrice[symbol]);
+            mailer.sendEMail([data.Email],symbol + priceData[symbol][i],'now price' + nowPrice[symbol]);
             removeArray(priceData[symbol], priceData[symbol][i]);
-            // let tina = priceData[symbol].filter(p => {let aa = p === priceData[symbol][i];return aa;});
-            // let index = priceData[symbol].indexOf(tina[0]);
-            // if (index > -1){
-            //     priceData[symbol].splice(index, 1);
-            // }
             has = true;
             break;
         }
