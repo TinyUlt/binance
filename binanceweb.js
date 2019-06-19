@@ -6,6 +6,23 @@ let bodyParser = require('body-parser');
 
 let urlencodedParser = bodyParser.urlencoded({ extended: false });
 
+let data = JSON.parse(fs.readFileSync('./public/data.json'));
+let priceData = data.Symbol;
+
+let nowPrice={};
+let lastPrice={};
+
+let enableSymbles=[];
+
+
+for (let p in priceData){//遍历json对象的每个key/value对,p为key
+
+    nowPrice[p]=0;
+    lastPrice[p]=0;
+    enableSymbles.push(p);
+}
+
+
 app.use(express.static('public'));
 
 app.get('/index.htm', function (req, res) {
@@ -54,32 +71,6 @@ function compare() {
         return 0;
     }
 }
-let data = null;
-let priceData = null;
-let nowPrice={};
-let lastPrice={};
-let enableSymbles=[];
-readInfo();
-function readInfo(){
-    data = JSON.parse(fs.readFileSync('./public/data.json'));
-    priceData = data.Symbol;
-
-    for (let p in priceData){//遍历json对象的每个key/value对,p为key
-
-        nowPrice[p]=0;
-        lastPrice[p]=0;
-        enableSymbles.push(p);
-    }
-}
-function reloadInfo(){
-    data = JSON.parse(fs.readFileSync('./public/data.json'));
-    priceData = data.Symbol;
-
-    enableSymbles=[];
-    for (let p in priceData){//遍历json对象的每个key/value对,p为key
-        enableSymbles.push(p);
-    }
-}
 function wirteInfo() {
     fs.writeFileSync('./public/data.json',JSON.stringify(data));
 }
@@ -91,20 +82,20 @@ function handle(pathName, req, response) {
         let symbol = req.query.symbol;
         if (priceData[symbol]===undefined){
             priceData[symbol]=[];
+            enableSymbles.push(symbol);
             nowPrice[symbol]=0;
             lastPrice[symbol]=0;
             wirteInfo();
-            reloadInfo();
             response.end('');
         }
     } else if (pathName === 'deleteSymbol'){
         let symbol = req.query.symbol;
         if (priceData[symbol]!==undefined){
             delete priceData[symbol];
+            removeArray(enableSymbles, symbol);
             delete nowPrice[symbol];
             delete lastPrice[symbol];
             wirteInfo();
-            reloadInfo();
             response.end('');
         }
     } else if (pathName === 'getPriceList'){
@@ -164,8 +155,6 @@ function removeArray(array, d){
 function check(symbol){
     //let priceData = JSON.parse(fs.readFileSync('./public/price.json'));
     let has = false;
-    console.log(priceData);
-    console.log("symbol"+symbol);
     for (let i=0;i<priceData[symbol].length;i++){
 
         if ((nowPrice[symbol] <= priceData[symbol][i] && priceData[symbol][i]<=lastPrice[symbol])||
@@ -179,14 +168,13 @@ function check(symbol){
     if (!has){
         lastPrice[symbol] = nowPrice[symbol];
     } else {
-        check();
+        check(symbol);
     }
     //fs.writeFileSync('./public/price.json',JSON.stringify(priceData));
-
+    console.log(priceData);
 }
 function clock() {
     console.log('clock');
-
     binance.prices((error, ticker) => {
         if (ticker === undefined){
             console.log('ticker undefined');
