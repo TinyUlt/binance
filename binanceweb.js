@@ -164,6 +164,8 @@ function removeArray(array, d){
 function check(symbol){
     //let priceData = JSON.parse(fs.readFileSync('./public/price.json'));
     let has = false;
+    console.log(priceData);
+    console.log("symbol"+symbol);
     for (let i=0;i<priceData[symbol].length;i++){
 
         if ((nowPrice[symbol] <= priceData[symbol][i] && priceData[symbol][i]<=lastPrice[symbol])||
@@ -180,7 +182,7 @@ function check(symbol){
         check();
     }
     //fs.writeFileSync('./public/price.json',JSON.stringify(priceData));
-    console.log(priceData);
+
 }
 function clock() {
     console.log('clock');
