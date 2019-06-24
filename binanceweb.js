@@ -6,21 +6,28 @@ let bodyParser = require('body-parser');
 
 let urlencodedParser = bodyParser.urlencoded({ extended: false });
 
-let data = JSON.parse(fs.readFileSync('./public/data.json'));
-let priceData = data.Symbol;
+let userInfos = JSON.parse(fs.readFileSync('./public/data.json'));
 
-let nowPrice={};
-let lastPrice={};
+let nowTicker = null;
+let lastTicker = null;
+nowTicker={};
+lastTicker={};
+// nowTicker['WAVESUSDT']=100;
+// lastTicker['WAVESUSDT']=100;
+//let priceData = data.Symbol;
 
-let enableSymbles=[];
+// let nowPrice={};
+// let lastPrice={};
 
 
-for (let p in priceData){//遍历json对象的每个key/value对,p为key
 
-    nowPrice[p]=0;
-    lastPrice[p]=0;
-    enableSymbles.push(p);
-}
+
+// for (let p in priceData){//遍历json对象的每个key/value对,p为key
+//
+//     nowPrice[p]=0;
+//     lastPrice[p]=0;
+//
+// }
 
 
 app.use(express.static('public'));
@@ -59,10 +66,39 @@ app.post('/d_*', urlencodedParser, function (req, res) {
     handle(req.params['0'], req, res );
 });
 
+
+function getHasSymbolListByEmail(email){
+    let list = [];
+    if (userInfos[email] === undefined){
+        userInfos[email]={};
+        userInfos[email].Symbol={};
+    } else {
+        for (let symbol in userInfos[email].Symbol){//遍历json对象的每个key/value对,p为key
+            list.push(symbol);
+        }
+    }
+    return list;
+}
+function isEnableSymbol(symbol){
+    for (let s in nowTicker){//遍历json对象的每个key/value对,p为key
+       if (s === symbol){
+           return true;
+       }
+    }
+    return false;
+}
+function isValiableEmail(email){
+    for (let s in userInfos){//遍历json对象的每个key/value对,p为key
+        if (s === email){
+            return true;
+        }
+    }
+    return false;
+}
 function compare() {
     return function(object1, object2) {
-        let value1 = object1;
-        let value2 = object2;
+        let value1 = object1.price;
+        let value2 = object2.price;
         if (value2 < value1) {
             return -1;
         } else if (value2 > value1) {
@@ -72,56 +108,90 @@ function compare() {
     }
 }
 function wirteInfo() {
-    fs.writeFileSync('./public/data.json',JSON.stringify(data));
+    fs.writeFileSync('./public/data.json',JSON.stringify(userInfos));
 }
 
 function handle(pathName, req, response) {
 
+    if (nowTicker===null){
+        return;
+    }
     console.log(pathName);
     if (pathName==='createSymbol'){
         let symbol = req.query.symbol;
-        if (priceData[symbol]===undefined){
-            priceData[symbol]=[];
-            enableSymbles.push(symbol);
-            nowPrice[symbol]=0;
-            lastPrice[symbol]=0;
+        if (!isEnableSymbol(symbol)){
+            return;
+        }
+        let email = req.query.email;
+        if (!isValiableEmail(email)){
+            return
+        }
+        if (userInfos[email].Symbol[symbol]===undefined){
+            userInfos[email].Symbol[symbol]=[];
             wirteInfo();
             response.end('');
         }
     } else if (pathName === 'deleteSymbol'){
         let symbol = req.query.symbol;
-        if (priceData[symbol]!==undefined){
-            delete priceData[symbol];
-            removeArray(enableSymbles, symbol);
-            delete nowPrice[symbol];
-            delete lastPrice[symbol];
+        if (!isEnableSymbol(symbol)){
+            return;
+        }
+
+        let email = req.query.email;
+        if (!isValiableEmail(email)){
+            return
+        }
+        if (userInfos[email].Symbol[symbol]!==undefined){
+            delete userInfos[email].Symbol[symbol];
             wirteInfo();
             response.end('');
         }
     } else if (pathName === 'getPriceList'){
         let symbol = req.query.symbol;
-        response.end(JSON.stringify(priceData[symbol].sort(compare())));
+        if (!isEnableSymbol(symbol)){
+            return;
+        }
+
+        let email = req.query.email;
+        if (!isValiableEmail(email)){
+            return
+        }
+        response.end(JSON.stringify(userInfos[email].Symbol[symbol]));
     } else if (pathName === 'pushPriceList'){
         let symbol = req.query.symbol;
+        if (!isEnableSymbol(symbol)){
+            return;
+        }
+        let email = req.query.email;
+        if (!isValiableEmail(email)){
+            return
+        }
         let pricelist = JSON.parse(req.query.priceList);
         let isValiable=true;
         for (let i=0;i < pricelist.length;i++){
-            if (pricelist[i]===null){
+            if (pricelist[i]===null || pricelist[i].price === null){
                 isValiable=false;
                 break;
             }
         }
         if (isValiable){
-            priceData[symbol] = pricelist.sort(compare());
+            userInfos[email].Symbol[symbol] = pricelist.sort(compare());
         }
 
         wirteInfo();
-        response.end(JSON.stringify(priceData[symbol].sort(compare())));
+        response.end(JSON.stringify(userInfos[email].Symbol[symbol]));
     } else if (pathName === 'getPrice'){
-
-        response.end(JSON.stringify(nowPrice));
+        let symbol = req.query.symbol;
+        if (!isEnableSymbol(symbol)){
+            return;
+        }
+        response.end(JSON.stringify(nowTicker[symbol]));
     } else if (pathName === 'getEnableSymbols'){
-        response.end(JSON.stringify(enableSymbles));
+        let email = req.query.email;
+        // if (!isValiableEmail(email)){
+        //     return
+        // }
+        response.end(JSON.stringify(getHasSymbolListByEmail(email)));
     }
 
 }
@@ -152,23 +222,35 @@ function removeArray(array, d){
         array.splice(index, 1);
     }
 }
-function check(symbol){
+function copyTicker(obj){
+    let o = {};
+    if (obj !== null){
+        for (let p in obj){//遍历json对象的每个key/value对,p为key
+            o[p]=obj[p];
+        }
+    }
+    return o;
+}
+function check(email, symbol){
     //let priceData = JSON.parse(fs.readFileSync('./public/price.json'));
-    let has = false;
-    for (let i=0;i<priceData[symbol].length;i++){
 
-        if ((nowPrice[symbol] <= priceData[symbol][i] && priceData[symbol][i]<=lastPrice[symbol])||
-            (lastPrice[symbol] <= priceData[symbol][i] && priceData[symbol][i]<=nowPrice[symbol])){
-            mailer.sendEMail([data.Email],symbol + priceData[symbol][i],'now price' + nowPrice[symbol]);
-            removeArray(priceData[symbol], priceData[symbol][i]);
+    let priceData = userInfos[email].Symbol[symbol];
+    let has = false;
+    for (let i=0;i<priceData.length;i++){
+
+        if ((nowTicker[symbol] <= priceData[i].price && priceData[i].price<=lastTicker[symbol])||
+            (lastTicker[symbol] <= priceData[i].price && priceData[i].price<=nowTicker[symbol])){
+            mailer.sendEMail([email],symbol + ' ' + priceData[i].price+' '+priceData[i].disc,'now price' + nowTicker[symbol]);
+            removeArray(priceData, priceData[i]);
             has = true;
             break;
         }
     }
     if (!has){
-        lastPrice[symbol] = nowPrice[symbol];
+        lastTicker = copyTicker(nowTicker);
+        wirteInfo();
     } else {
-        check(symbol);
+        check(email, symbol);
     }
     //fs.writeFileSync('./public/price.json',JSON.stringify(priceData));
     console.log(priceData);
@@ -179,14 +261,30 @@ function clock() {
         if (ticker === undefined){
             console.log('ticker undefined');
         } else {
-            for (let i=0;i<enableSymbles.length;i++){
-                let symbol=enableSymbles[i];
-                console.log('Price of '+symbol, ticker[symbol]);
-                nowPrice[symbol] = parseFloat(ticker[symbol]);
-                check(symbol);
+            nowTicker = ticker;
+            if (lastTicker===null){
+                lastTicker=nowTicker;
+            }
+            for (let email in userInfos){//遍历json对象的每个key/value对,p为key
+                let enableSymbles = getHasSymbolListByEmail(email);
+                for (let i=0;i<enableSymbles.length;i++){
+                    let symbol=enableSymbles[i];
+                    console.log('Price of '+symbol, nowTicker[symbol]);
+                    check(email, symbol);
+                }
             }
         }
     });
 
+}
+function testClock(){
+    for (let email in userInfos){//遍历json对象的每个key/value对,p为key
+        let enableSymbles = getHasSymbolListByEmail(email);
+        for (let i=0;i<enableSymbles.length;i++){
+            let symbol=enableSymbles[i];
+            console.log('Price of '+symbol, nowTicker[symbol]);
+            check(email, symbol);
+        }
+    }
 }
 setInterval(clock,5000);
