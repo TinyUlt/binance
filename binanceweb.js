@@ -11,8 +11,8 @@ let userInfos = JSON.parse(fs.readFileSync('./public/data.json'));
 let nowTicker = {};
 let lastTicker = {};
 
-// nowTicker['BTCUSDT']=100;
-// lastTicker['BTCUSDT']=100;
+nowTicker['BTCUSDT']=11282.76;
+lastTicker['BTCUSDT']=11282.76;
 //let priceData = data.Symbol;
 
 // let nowPrice={};
@@ -246,7 +246,6 @@ function check(email, symbol){
         }
     }
     if (!has){
-        lastTicker = copyTicker(nowTicker);
         wirteInfo();
     } else {
         check(email, symbol);
@@ -272,12 +271,13 @@ function clock() {
                     check(email, symbol);
                 }
             }
+            lastTicker = copyTicker(nowTicker);
         }
     });
 
 }
 function testClock(){
-    nowTicker['BTCUSDT']+=1;
+    nowTicker['BTCUSDT']+=0.01;
     for (let email in userInfos){//遍历json对象的每个key/value对,p为key
         let enableSymbles = getHasSymbolListByEmail(email);
         for (let i=0;i<enableSymbles.length;i++){
@@ -286,5 +286,6 @@ function testClock(){
             check(email, symbol);
         }
     }
+    lastTicker = copyTicker(nowTicker);
 }
-setInterval(clock,5000);
+setInterval(testClock,5000);
