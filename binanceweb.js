@@ -8,18 +8,15 @@ let urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 let userInfos = JSON.parse(fs.readFileSync('./public/data.json'));
 
-let nowTicker = null;
-let lastTicker = null;
-nowTicker={};
-lastTicker={};
-// nowTicker['WAVESUSDT']=100;
-// lastTicker['WAVESUSDT']=100;
+let nowTicker = {};
+let lastTicker = {};
+
+// nowTicker['BTCUSDT']=100;
+// lastTicker['BTCUSDT']=100;
 //let priceData = data.Symbol;
 
 // let nowPrice={};
 // let lastPrice={};
-
-
 
 
 // for (let p in priceData){//遍历json对象的每个key/value对,p为key
@@ -71,7 +68,9 @@ function getHasSymbolListByEmail(email){
     let list = [];
     if (userInfos[email] === undefined){
         userInfos[email]={};
-        userInfos[email].Symbol={};
+        userInfos[email].Symbol={"BTCUSDT":[]};
+        wirteInfo();
+        list = getHasSymbolListByEmail(email);
     } else {
         for (let symbol in userInfos[email].Symbol){//遍历json对象的每个key/value对,p为key
             list.push(symbol);
@@ -195,7 +194,7 @@ function handle(pathName, req, response) {
     }
 
 }
-let server = app.listen(8080, function () {
+let server = app.listen(8081, function () {
 
     let host = server.address().address;
     let port = server.address().port;
@@ -226,7 +225,7 @@ function copyTicker(obj){
     let o = {};
     if (obj !== null){
         for (let p in obj){//遍历json对象的每个key/value对,p为key
-            o[p]=obj[p];
+            o[p]=parseFloat(obj[p]);
         }
     }
     return o;
@@ -261,9 +260,9 @@ function clock() {
         if (ticker === undefined){
             console.log('ticker undefined');
         } else {
-            nowTicker = ticker;
+            nowTicker = copyTicker(ticker);
             if (lastTicker===null){
-                lastTicker=nowTicker;
+                lastTicker=copyTicker(nowTicker);
             }
             for (let email in userInfos){//遍历json对象的每个key/value对,p为key
                 let enableSymbles = getHasSymbolListByEmail(email);
@@ -278,6 +277,7 @@ function clock() {
 
 }
 function testClock(){
+    nowTicker['BTCUSDT']+=1;
     for (let email in userInfos){//遍历json对象的每个key/value对,p为key
         let enableSymbles = getHasSymbolListByEmail(email);
         for (let i=0;i<enableSymbles.length;i++){
