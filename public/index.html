@@ -235,8 +235,14 @@
         document.getElementById('Login').onclick = function () {
 
             email = document.getElementById("emailInput").value;
-            setCookie("username",email,30);
-            getEnableSymbols();
+            if(email.indexOf('@')===-1){
+                alert(`请输入正确的邮箱地址`);
+            }else{
+                setCookie("username",email,30);
+                getEnableSymbols();
+                alert(`温馨提示:7天未登陆,自动删除账号数据`);
+            }
+
 
 
         };
@@ -251,11 +257,11 @@
 
 </script>
 <strong>
-    <p>binance 邮件通知助手1.0</p>
+    <p>binance开源免费邮件通知助手 (https://github.com/TinyUlt/binance.git)</p>
 </strong>
 
 <div id="divEmail">
-    <label >Email:</label>
+    <label >邮箱地址:</label>
     <input type="input" id="emailInput"/>
     <button id="Login">Login or Create</button>
 </div>
@@ -270,8 +276,7 @@
 
     <div>
         <select id="symbol" onchange="changeSymbol()">
-            <!--<option value="ETHUSDT">ETHUSDT</option>-->
-            <!--<option value="ZRXUSDT">ZRXUSDT</option>-->
+
         </select>
     </div>
 
