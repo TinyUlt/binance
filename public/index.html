@@ -61,7 +61,15 @@
         console.log(_get);
         $.post(_get,function(cd,status){
 
-            getEnableSymbols();
+            if(cd === 'false'){
+                alert(`binance中不存在${s}币种`);
+            }else if(cd === 'already'){
+                alert(`已存在${s}币种`);
+            }
+            else{
+                getEnableSymbols();
+            }
+
 
         });
     }
@@ -96,11 +104,16 @@
         console.log(_get);
         $.post(_get,function(cd,status){
 
-            pricelist = JSON.parse(cd);
+            if(cd === 'false'){
+                alert(`添加失败`);
+            }else{
+                pricelist = JSON.parse(cd);
 
-            console.log(pricelist);
+                console.log(pricelist);
 
-            printPriceList();
+                printPriceList();
+            }
+
 
         });
 

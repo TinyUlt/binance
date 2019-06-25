@@ -122,6 +122,7 @@ function handle(pathName, req, response) {
     if (pathName==='createSymbol'){
         let symbol = req.query.symbol;
         if (!isEnableSymbol(symbol)){
+            response.end('false');
             return;
         }
         let email = req.query.email;
@@ -132,6 +133,8 @@ function handle(pathName, req, response) {
             userInfos[email].Symbol[symbol]=[];
             wirteInfo();
             response.end('');
+        } else {
+            response.end('already');
         }
     } else if (pathName === 'deleteSymbol'){
         let symbol = req.query.symbol;
@@ -178,10 +181,11 @@ function handle(pathName, req, response) {
         }
         if (isValiable){
             userInfos[email].Symbol[symbol] = pricelist.sort(compare());
+            wirteInfo();
+            response.end(JSON.stringify(userInfos[email].Symbol[symbol]));
+        } else {
+            response.end('false');
         }
-
-        wirteInfo();
-        response.end(JSON.stringify(userInfos[email].Symbol[symbol]));
     } else if (pathName === 'getPrice'){
         let symbol = req.query.symbol;
         if (!isEnableSymbol(symbol)){
