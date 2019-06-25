@@ -11,8 +11,11 @@ let userInfos = JSON.parse(fs.readFileSync('./public/data.json'));
 let nowTicker = {};
 let lastTicker = {};
 
-// nowTicker['BTCUSDT']=11282.76;
-// lastTicker['BTCUSDT']=11282.76;
+nowTicker['BTCUSDT']=11282.76;
+lastTicker['BTCUSDT']=11282.76;
+
+nowTicker['EOSUSDT']=1.76;
+lastTicker['EOSUSDT']=1.76;
 //let priceData = data.Symbol;
 
 // let nowPrice={};

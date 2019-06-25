@@ -10,6 +10,7 @@
     let pricelist = null;
     let symbol = null;
     let email = null;
+    let symbolTemp = null;
     function printPriceList() {
 
         let priceTable = document.getElementById('priceTable');
@@ -35,7 +36,7 @@
             labelDisc.textContent = pricelist[i].disc;
 
             let button=document.createElement("button");
-            button.textContent='delete';
+            button.textContent='删除';
             button.onclick = function () {
                 let price = pricelist[i];
 
@@ -160,6 +161,10 @@
         getPriceList();
     }
     function changeSymbol(){
+        if(symbolTemp != null){
+            document.getElementById("symbol").value = symbolTemp;
+            symbolTemp = null;
+        }
         symbol = document.getElementById("symbol").value;
         console.log(symbol);
         getPrice();
@@ -204,7 +209,8 @@
         };
         document.getElementById('createSymbol').onclick = function () {
 
-            createSymbol(document.getElementById("createSymbolInput").value);
+            symbolTemp =document.getElementById("createSymbolInput").value;
+            createSymbol(symbolTemp);
 
         };
         document.getElementById('deleteSymbol').onclick = function () {
@@ -239,10 +245,10 @@
 <div id="divAll" style="visibility:hidden;">
 
     <div >
-        <label >create Symbol:</label>
+        <label >添加币种</label>
         <input type="input" id="createSymbolInput"/>
-        <button id="createSymbol">Create</button>
-        <button id="deleteSymbol">Delete</button>
+        <button id="createSymbol">添加</button>
+        <button id="deleteSymbol">删除</button>
     </div>
 
     <div>
@@ -254,15 +260,15 @@
 
 
     <div>
-        <label id="nowPrice">Now Price:</label>
+        <label id="nowPrice">当前价格:</label>
     </div>
 
 
-    <label >price:</label>
+    <label >挂单价格:</label>
     <input type="input" id="input"/>
-    <label >disc:</label>
+    <label >备注:</label>
     <input type="input" id="disc"/>
-    <button id="create">Create</button>
+    <button id="create">添加</button>
 
     <table id="priceTable" border="0">
 
