@@ -62,9 +62,9 @@
         $.post(_get,function(cd,status){
 
             if(cd === 'false'){
-                alert(`binance中不存在${s}币种`);
+                alert(`binance中不存在${s}交易对`);
             }else if(cd === 'already'){
-                alert(`已存在${s}币种`);
+                alert(`已存在${s}交易对`);
             }
             else{
                 getEnableSymbols();
@@ -258,7 +258,7 @@
 <div id="divAll" style="visibility:hidden;">
 
     <div >
-        <label >添加币种</label>
+        <label >添加交易对</label>
         <input type="input" id="createSymbolInput"/>
         <button id="createSymbol">添加</button>
         <button id="deleteSymbol">删除</button>
