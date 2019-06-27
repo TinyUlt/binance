@@ -14,18 +14,18 @@ let userInfos = JSON.parse(fs.readFileSync('./public/data.json'));
 let nowTicker = {};
 let lastTicker = {};
 
-nowTicker['BTCUSDT']=11282.76;
-lastTicker['BTCUSDT']=11282.76;
-
-nowTicker['EOSUSDT']=1.76;
-lastTicker['EOSUSDT']=1.76;
+// nowTicker['BTCUSDT']=11282.76;
+// lastTicker['BTCUSDT']=11282.76;
+//
+// nowTicker['EOSUSDT']=1.76;
+// lastTicker['EOSUSDT']=1.76;
 
 let mailer = require('./mailer');
 
 let APIKEY = 'a';
 let APISECRET = 'b';
 
-server.listen(80);
+server.listen(8081);
 // WARNING: app.listen(80) will NOT work here!
 app.use(express.static('public'));
 app.get('index.htm', function (req, res) {
@@ -270,4 +270,4 @@ function testClock(){
     exe();
     lastTicker = copyTicker(nowTicker);
 }
-setInterval(testClock,1000);
+setInterval(clock,2000);
