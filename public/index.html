@@ -23,7 +23,7 @@
     let email = null;
     let symbolTemp = null;
 
-    var socket = io.connect('http://localhost');
+    var socket = io.connect('http://47.52.225.13:8081');
     socket.on('showSymbols', function (symbols) {
 
         console.log(symbols);
