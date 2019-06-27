@@ -1,0 +1,117 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>websocket</title>
+    <style type="text/css">
+
+    </style>
+</head>
+<body>
+<div id="connected"></div>
+
+<script type="text/javascript">
+
+    let pricelist = null;
+    let symbol = null;
+    let email = null;
+    let symbolTemp = null;
+    function getEnableSymbols(){
+
+    }
+    function setCookie(cname,cvalue,exdays){
+        var d = new Date();
+        d.setTime(d.getTime()+(exdays*24*60*60*1000));
+        var expires = "expires="+d.toGMTString();
+        document.cookie = cname+"="+cvalue+"; "+expires;
+    }
+    function getCookie(cname){
+        var name = cname + "=";
+        var ca = document.cookie.split(';');
+        for(var i=0; i<ca.length; i++) {
+            var c = ca[i].trim();
+            if (c.indexOf(name)==0) { return c.substring(name.length,c.length); }
+        }
+        return "";
+    }
+    function checkCookie(){
+        var user=getCookie("username");
+        if (user!=""){
+            document.getElementById("emailInput").value = user;
+        }
+    }
+
+
+    let onOpen = function() {
+            console.log("Socket opened.");
+            socket.send("Hi, Server!");
+        },
+        onClose = function() {
+            console.log("Socket closed.");
+        },
+        onMessage = function(data) {
+            console.log("We get signal:");
+            console.log(data);
+        },
+        onError = function() {
+            console.log("We got an error.");
+        },
+
+        socket = new WebSocket("ws://127.0.0.1:8082/");
+    socket.onopen = onOpen;
+    socket.onclose = onClose;
+    socket.onerror = onError;
+    socket.onmessage = onMessage;
+
+
+
+
+
+
+
+
+
+
+</script>
+<strong>
+    <p>binance开源免费邮件通知助手 (https://github.com/TinyUlt/binance.git)</p>
+</strong>
+
+<div id="divEmail">
+    <label >邮箱地址:</label>
+    <input type="input" id="emailInput"/>
+    <button id="Login">登陆或创建</button>
+</div>
+<div id="divAll" style="visibility:hidden;">
+
+    <div >
+        <label >添加交易对</label>
+        <input type="input" id="createSymbolInput"/>
+        <button id="createSymbol">添加</button>
+        <button id="deleteSymbol">删除</button>
+    </div>
+
+    <div>
+        <select id="symbol" onchange="changeSymbol()">
+
+        </select>
+    </div>
+
+
+    <div>
+        <label id="nowPrice">当前价格:</label>
+    </div>
+
+
+    <label >挂单价格:</label>
+    <input type="input" id="input"/>
+    <label >备注:</label>
+    <input type="input" id="disc"/>
+    <button id="create">添加</button>
+
+    <table id="priceTable" border="0">
+
+    </table>
+</div>
+</body>
+</html>

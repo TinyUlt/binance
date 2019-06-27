@@ -1,73 +1,16 @@
-<!--<!DOCTYPE html>-->
-<!--<html lang="en">-->
-<!--<head>-->
-    <!--<meta charset="UTF-8">-->
-    <!--<title>Title</title>-->
-<!--</head>-->
-
-<!--<script src="/socket.io/socket.io.js"></script>-->
-<!--<script type="text/javascript" src="js/loader.js"></script>-->
-<!--<script  type="text/javascript" src="js/jquery.min.js"></script>-->
-
-<!--<script type="text/javascript">-->
 <!DOCTYPE html>
 <html>
 <body>
 <script type="text/javascript" src="js/loader.js"></script>
 <script  type="text/javascript" src="js/jquery.min.js"></script>
-<script src="/socket.io/socket.io.js"></script>
+
 
 <script type="text/javascript">
+
     let pricelist = null;
     let symbol = null;
     let email = null;
     let symbolTemp = null;
-
-    var socket = io.connect('http://localhost');
-    socket.on('showSymbols', function (symbols) {
-
-        console.log(symbols);
-
-        document.getElementById('divAll').style.visibility="visible";
-
-        let divEmail = document.getElementById('divEmail');
-        while(divEmail.hasChildNodes()){
-            divEmail.removeChild(divEmail.lastChild)
-        }
-        let labelEmail=document.createElement("label");
-        labelEmail.textContent = email;
-        divEmail.appendChild(labelEmail);
-
-
-        //let symbols = JSON.parse(cd);
-
-        let symbolSelect = document.getElementById('symbol');
-        while(symbolSelect.hasChildNodes()){
-            symbolSelect.removeChild(symbolSelect.lastChild)
-        }
-
-        for(let i=0;i<symbols.length;i++){
-            let option = document.createElement("option");
-            option.value = symbols[i];
-            option.textContent = symbols[i];
-            symbolSelect.appendChild(option);
-        }
-        changeSymbol();
-        //self.setInterval("clock()",2000);
-    });
-
-    socket.on('onPriceList', function (data){
-        console.log(data);
-        pricelist = data;
-        printPriceList();
-    });
-    socket.on('Failed', function (data){
-        alert(`添加失败${data.message}`);
-    });
-    socket.on('onPrice', function (data) {
-        console.log(data);
-        document.getElementById('nowPrice').textContent=`当前价格:${data}`;
-    });
     function printPriceList() {
 
         let priceTable = document.getElementById('priceTable');
@@ -104,7 +47,7 @@
                 index > -1 && pricelist.splice(index, 1);
 
                 console.log(pricelist);
-                socket.emit('pushPriceList', { 'email': email, 'symbol':symbol, 'priceList':pricelist});
+                pushPriceList();
             };
 
             tdPrice.appendChild(labelPrice);
@@ -113,8 +56,135 @@
             document.body.appendChild(priceTable);
         }
     }
+    function createSymbol(s){
+        _get = `/d_createSymbol?email=${email}&symbol=${s}`;
+        console.log(_get);
+        $.post(_get,function(cd,status){
+
+            if(cd === 'false'){
+                alert(`binance中不存在${s}交易对`);
+            }else if(cd === 'already'){
+                alert(`已存在${s}交易对`);
+            }
+            else{
+                getEnableSymbols();
+            }
 
 
+        });
+    }
+    function deleteSymbol(s){
+        _get = `/d_deleteSymbol?email=${email}&symbol=${s}`;
+        console.log(_get);
+        $.post(_get,function(cd,status){
+
+            getEnableSymbols();
+
+        });
+    }
+    function getPriceList() {
+        if(symbol!==null && symbol!==""){
+            _get = `/d_getPriceList?email=${email}&symbol=${symbol}`;
+            console.log(_get);
+            $.post(_get,function(cd,status){
+
+                pricelist = JSON.parse(cd);
+
+                console.log(pricelist);
+
+                printPriceList();
+
+            });
+        }
+
+
+    }
+    function pushPriceList() {
+        _get = `/d_pushPriceList?email=${email}&symbol=${symbol}&priceList=${JSON.stringify(pricelist)}`;
+        console.log(_get);
+        $.post(_get,function(cd,status){
+
+            if(cd === 'false'){
+                alert(`添加失败`);
+            }else{
+                pricelist = JSON.parse(cd);
+
+                console.log(pricelist);
+
+                printPriceList();
+            }
+
+
+        });
+
+    }
+    function getPrice(){
+        if(symbol!==null && symbol!==""){
+            _get = `/d_getPrice?email=${email}&symbol=${symbol}`;
+
+            $.post(_get,function(cd,status){
+
+                console.log(cd);
+                let nowPrice = JSON.parse(cd);
+                document.getElementById('nowPrice').textContent=`当前价格:${nowPrice}`;
+
+            });
+        }
+
+    }
+
+    function getEnableSymbols(){
+        _get = `/d_getEnableSymbols?email=${email}`;
+
+        $.post(_get,function(cd,status){
+
+            console.log(cd);
+            document.getElementById('divAll').style.visibility="visible";
+
+            let divEmail = document.getElementById('divEmail');
+            while(divEmail.hasChildNodes()){
+                divEmail.removeChild(divEmail.lastChild)
+            }
+            let labelEmail=document.createElement("label");
+            labelEmail.textContent = email;
+            divEmail.appendChild(labelEmail);
+
+
+            let symbols = JSON.parse(cd);
+
+            let symbolSelect = document.getElementById('symbol');
+            while(symbolSelect.hasChildNodes()){
+                symbolSelect.removeChild(symbolSelect.lastChild)
+            }
+
+           for(let i=0;i<symbols.length;i++){
+               let option = document.createElement("option");
+               option.value = symbols[i];
+               option.textContent = symbols[i];
+               symbolSelect.appendChild(option);
+           }
+            changeSymbol();
+            self.setInterval("clock()",2000);
+        });
+    }
+    function clock()
+    {
+
+        getPrice();
+        getPriceList();
+    }
+    function changeSymbol(){
+        if(symbolTemp != null){
+            document.getElementById("symbol").value = symbolTemp;
+            symbolTemp = null;
+        }
+        symbol = document.getElementById("symbol").value;
+        console.log(symbol);
+        getPrice();
+        getPriceList();
+        document.getElementById('input').value="";
+        document.getElementById('disc').value="";
+    }
     function setCookie(cname,cvalue,exdays){
         var d = new Date();
         d.setTime(d.getTime()+(exdays*24*60*60*1000));
@@ -136,34 +206,24 @@
             document.getElementById("emailInput").value = user;
         }
     }
-    function changeSymbol(){
-        if(symbolTemp != null){
-            document.getElementById("symbol").value = symbolTemp;
-            symbolTemp = null;
-        }
-        symbol = document.getElementById("symbol").value;
-        console.log(symbol);
-        socket.emit('getPriceList', { 'email': email, 'symbol':symbol});
-        document.getElementById('input').value="";
-        document.getElementById('disc').value="";
-    }
+
     $(document).ready(function(){
         checkCookie();
         document.getElementById('create').onclick = function () {
             pricelist.push({'price':parseFloat(document.getElementById('input').value), 'disc':document.getElementById('disc').value});
-            socket.emit('pushPriceList', { 'email': email, 'symbol':symbol, 'priceList':pricelist});
+            pushPriceList();
 
         };
         document.getElementById('createSymbol').onclick = function () {
 
             symbolTemp =document.getElementById("createSymbolInput").value;
-            //createSymbol(symbolTemp);
-            socket.emit('createSymbol', { 'email': email, 'symbol':symbolTemp});
+            createSymbol(symbolTemp);
 
         };
         document.getElementById('deleteSymbol').onclick = function () {
 
-            socket.emit('deleteSymbol', { 'email': email, 'symbol':document.getElementById("createSymbolInput").value});
+            deleteSymbol(document.getElementById("createSymbolInput").value);
+
         };
 
         document.getElementById('Login').onclick = function () {
@@ -173,17 +233,16 @@
                 alert(`请输入正确的邮箱地址`);
             }else{
                 setCookie("username",email,30);
-                socket.emit('Login', { 'email': email });
+                getEnableSymbols();
                 alert(`温馨提示:7天未登陆,自动删除账号数据`);
             }
         };
     });
 
-</script>
 
-<body>
+</script>
 <strong>
-    <p>binance开源免费邮件通知助手2.0 (https://github.com/TinyUlt/binance.git)</p>
+    <p>binance开源免费邮件通知助手 (https://github.com/TinyUlt/binance.git)</p>
 </strong>
 
 <div id="divEmail">
@@ -222,5 +281,7 @@
 
     </table>
 </div>
+
+
 </body>
 </html>
