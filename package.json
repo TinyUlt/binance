@@ -8,7 +8,7 @@
     "express": "latest",
     "fs": "latest",
     "https-proxy-agent": "^2.2.1",
-    "nodemailer": "^4.6.4",
+    "nodemailer": "^6.4.16",
     "request": "^2.85.0",
     "socket.io": "^2.2.0",
     "socket.io-client": "^2.2.0",
